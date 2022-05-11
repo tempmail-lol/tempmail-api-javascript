@@ -1,9 +1,9 @@
 #!
 
+import fetch from "node-fetch";
+
 import Inbox from "./Inbox";
 import Email from "./Email";
-
-import fetch from "node-fetch";
 
 const BASE_URL = "https://api.tempmail.lol";
 
