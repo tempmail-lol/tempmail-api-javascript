@@ -11,10 +11,12 @@ const BASE_URL = "https://api.tempmail.lol";
  * Create a new Inbox.
  * @param cb {function} Callback function.
  */
-function createInbox(cb: (inbox: Inbox) => any): void {
-    fetch(`${BASE_URL}/generate`).then(res => res.json()).then(json => {
+function createInbox(cb: (inbox: Inbox | undefined, err: Error | null) => any): void {
+    fetch(`${BASE_URL}/generate`).then(res => res.json()).then((json) => {
         const inbox = new Inbox(json.address, json.token);
-        cb(inbox);
+        cb(inbox, null);
+    }).catch((err) => {
+        cb(undefined, err);
     });
 }
 
@@ -32,9 +34,8 @@ async function createInboxAsync(): Promise<Inbox> {
  * Check for new emails on an Inbox.
  * @param inbox {Inbox | string} Inbox or token string to check.
  * @param cb {function} Callback function.
- * @throws {Error} If the token is not valid.
  */
-function checkInbox(inbox: Inbox | string, cb: (emails: Email[]) => any): void {
+function checkInbox(inbox: Inbox | string, cb: (emails: Email[], err: Error | null) => any): void {
     
     //convert the token to an Inbox
     if(typeof inbox === "string") {
@@ -43,13 +44,13 @@ function checkInbox(inbox: Inbox | string, cb: (emails: Email[]) => any): void {
     
     fetch(`${BASE_URL}/auth/${inbox.token}`).then(res => res.json()).then(json => {
         if(json.token === "invalid") {
-            throw new Error("Invalid token");
+            cb([], new Error("Invalid token"));
         }
         if(json.email === null) {
-            return cb([]);
+            return cb([], null);
         }
         const emails = json.email.map((email: Email) => new Email(email.from, email.to, email.subject, email.body, email.html, email.date));
-        cb(emails);
+        cb(emails, null);
     });
 }
 
