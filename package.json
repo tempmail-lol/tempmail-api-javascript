@@ -1,6 +1,6 @@
 {
   "name": "tempmail.lol",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "API to generate temporary email addresses.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
