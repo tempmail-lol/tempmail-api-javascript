@@ -18,7 +18,11 @@ This has built-in types.
 To create an inbox, you can use one of the following two functions:
 ```js
 //with callback
-createInbox((inbox) => {
+createInbox((inbox, err) => {
+    if(err) {
+        return console.error(err);
+    }
+    
     console.log(`Created new inbox: ${inbox.address}, token: ${inbox.token}`);
 });
 
