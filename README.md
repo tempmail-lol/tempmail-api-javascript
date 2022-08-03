@@ -24,10 +24,12 @@ createInbox((inbox, err) => {
     }
     
     console.log(`Created new inbox: ${inbox.address}, token: ${inbox.token}`);
-});
+}, false); //set to true to use Rush Mode domains.
+
+//read more about Rush Mode: https://tempmail.lol/news/2022/08/03/introducing-rush-mode-for-tempmail/
 
 //async
-createInboxAsync().then((inbox) => {
+createInboxAsync(false).then((inbox) => { //set to true to use Rush Mode domains.
     console.log(`Created new inbox: ${inbox.address}, token: ${inbox.token}`);
 });
 
