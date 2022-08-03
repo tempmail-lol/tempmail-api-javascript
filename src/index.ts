@@ -10,9 +10,10 @@ const BASE_URL = "https://api.tempmail.lol";
 /**
  * Create a new Inbox.
  * @param cb {function} Callback function.
+ * @param rush {boolean} (optional) Enable Rush Mode (see https://tempmail.lol/news/2022/08/03/introducing-rush-mode-for-tempmail/).
  */
-function createInbox(cb: (inbox: Inbox | undefined, err: Error | null) => any): void {
-    fetch(`${BASE_URL}/generate`).then(res => res.json()).then((json) => {
+function createInbox(cb: (inbox: Inbox | undefined, err: Error | null) => any, rush = false): void {
+    fetch(`${BASE_URL}/generate${rush ? "/rush" : ""}`).then(res => res.json()).then((json) => {
         const inbox = new Inbox(json.address, json.token);
         cb(inbox, null);
     }).catch((err) => {
@@ -22,10 +23,11 @@ function createInbox(cb: (inbox: Inbox | undefined, err: Error | null) => any): 
 
 /**
  * Create a new Inbox asynchronously.
+ * @param rush {boolean} (optional) Enable Rush Mode (see https://tempmail.lol/news/2022/08/03/introducing-rush-mode-for-tempmail/).
  * @returns {Promise<Inbox>} Promise with the Inbox.
  */
-async function createInboxAsync(): Promise<Inbox> {
-    const res = await fetch(`${BASE_URL}/generate`);
+async function createInboxAsync(rush: boolean = false): Promise<Inbox> {
+    const res = await fetch(`${BASE_URL}/generate${rush ? "/rush" : ""}`);
     const json = await res.json();
     return new Inbox(json.address, json.token);
 }
