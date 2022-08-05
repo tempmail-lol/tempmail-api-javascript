@@ -23,6 +23,7 @@ function createInbox(cb: (inbox: Inbox | undefined, err: Error | null) => any, r
 
 /**
  * Create a new Inbox asynchronously.
+ * 
  * @param rush {boolean} (optional) Enable Rush Mode (see https://tempmail.lol/news/2022/08/03/introducing-rush-mode-for-tempmail/).
  * @returns {Promise<Inbox>} Promise with the Inbox.
  */
