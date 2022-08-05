@@ -7,7 +7,8 @@ export default class Email {
         public readonly subject: string,
         public readonly body: string,
         public readonly html: string | null,
-        public readonly date: number
+        public readonly date: number,
+        public readonly ip: string,
     ) {}
     
 }

@@ -52,7 +52,7 @@ function checkInbox(inbox: Inbox | string, cb: (emails: Email[], err: Error | nu
         if(json.email === null) {
             return cb([], null);
         }
-        const emails = json.email.map((email: Email) => new Email(email.from, email.to, email.subject, email.body, email.html, email.date));
+        const emails = json.email.map((email: Email) => new Email(email.from, email.to, email.subject, email.body, email.html, email.date, email.ip));
         cb(emails, null);
     });
 }
@@ -79,7 +79,7 @@ async function checkInboxAsync(inbox: Inbox | string): Promise<Email[]> {
     if(json.email === null) {
         return [];
     }
-    return json.email.map((email: Email) => new Email(email.from, email.to, email.subject, email.body, email.html, email.date));
+    return json.email.map((email: Email) => new Email(email.from, email.to, email.subject, email.body, email.html, email.date, email.ip));
 }
 
 export {
