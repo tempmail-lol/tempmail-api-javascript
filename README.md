@@ -37,6 +37,19 @@ createInboxAsync(false).then((inbox) => { //set to true to use Rush Mode domains
 const inbox = await createInboxAsync();
 ```
 
+You can also specify a parameter after the rush mode parameter to specify the domain of the inbox. For example:
+```js
+createInbox((inbox, err) => {
+    if(err) {
+        return console.error(err);
+    }
+    
+    console.log(`Created new inbox: ${inbox.address}, token: ${inbox.token}`);
+}, false, "example.com");
+```
+
+Will create an inbox with the address `example.com`.
+
 ### Retrieve emails
 
 To get the emails (you can also pass in the Inbox object instead of a token string):
@@ -58,3 +71,27 @@ checkInboxAsync("token").then((emails) => {
 //await
 const emails = await checkInboxAsync("token");
 ```
+
+### Custom Domains
+
+Starting September 1st, you can use custom domains with this API. To use a custom domain, you can use the following function:
+```js
+//with callback
+checkCustom("example.com", "abcdefg...", (emails) => {
+    emails.forEach((e) => {
+        console.log(JSON.stringify(e, null, 4));
+    });
+});
+
+//async
+checkCustomAsync("example.com", "abcdefg...").then((emails) => {
+    emails.forEach((e) => {
+        console.log(JSON.stringify(e, null, 4));
+    });
+});
+
+//await
+const emails = await checkCustomAsync("example.com", "abcdefg...");
+```
+
+Custom domains will NOT alert you if the token is invalid.
