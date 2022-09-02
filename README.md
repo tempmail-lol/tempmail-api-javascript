@@ -77,14 +77,14 @@ const emails = await checkInboxAsync("token");
 Starting September 1st, you can use custom domains with this API. To use a custom domain, you can use the following function:
 ```js
 //with callback
-checkCustom("example.com", "abcdefg...", (emails) => {
+checkCustomInbox("example.com", "abcdefg...", (emails) => {
     emails.forEach((e) => {
         console.log(JSON.stringify(e, null, 4));
     });
 });
 
 //async
-checkCustomAsync("example.com", "abcdefg...").then((emails) => {
+checkCustomInboxAsync("example.com", "abcdefg...").then((emails) => {
     emails.forEach((e) => {
         console.log(JSON.stringify(e, null, 4));
     });
