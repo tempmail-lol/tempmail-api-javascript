@@ -1,4 +1,10 @@
 # TempMail.lol JS API
+<a href="https://npmjs.com/tempmail.lol">
+    <img alt="npm" src="https://img.shields.io/npm/v/tempmail.lol">
+</a>
+<a href="https://discord.gg/GHapeHPWVS">
+    <img alt="discord" src="https://discord.com/api/guilds/899020130091139082/widget.png">
+</a>
 
 This is an API for the temporary email service [TempMail.lol](https://tempmail.lol).
 
