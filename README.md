@@ -8,6 +8,13 @@
 
 This is an API for the temporary email service [TempMail.lol](https://tempmail.lol).
 
+## Upgrading from 2.0.3
+
+The version 3.0.0+ is vastly different from the old version of the API.  Please read the changes before using the new version of the API.
+
+Version 2.0.3 still works, but does not have support for custom domains or TempMail Plus.  Note that v2 support may be dropped at any time, so please
+upgrade your applications as soon as possible.
+
 ## Installation
 ```bash
 npm i tempmail.lol
