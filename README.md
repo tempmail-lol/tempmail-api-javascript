@@ -19,85 +19,70 @@ This has built-in types.
 
 ## Usage
 
+First, create a TempMail object:
+```js
+const tempmail = new TempMail();
+
+//if you have a TempMail Plus account, you can add it here:
+const tempmail = new TempMail("24-number id", "32-character token");
+```
+
 ### Create inbox
 
-To create an inbox, you can use one of the following two functions:
+To create an inbox:
 ```js
-//with callback
-createInbox((inbox, err) => {
-    if(err) {
-        return console.error(err);
-    }
-    
-    console.log(`Created new inbox: ${inbox.address}, token: ${inbox.token}`);
-}, false); //set to true to use Rush Mode domains.
 
-//read more about Rush Mode: https://tempmail.lol/news/2022/08/03/introducing-rush-mode-for-tempmail/
-
-//async
-createInboxAsync(false).then((inbox) => { //set to true to use Rush Mode domains.
-    console.log(`Created new inbox: ${inbox.address}, token: ${inbox.token}`);
+//simply, you can use the following function
+tempmail.createInbox().then(inbox => {
+    console.log(`Inbox: ${inbox.address} with a token of ${inbox.token}`);
 });
 
-//await
-const inbox = await createInboxAsync();
+//there are some advanced options as well
+
+//whether or not to create a community address
+const community = false;
+tempmail.createInbox(community);
+
+
+//or to use a custom domain
+const domain = "example.com";
+tempmail.createInbox(false, domain);
 ```
 
-You can also specify a parameter after the rush mode parameter to specify the domain of the inbox. For example:
-```js
-createInbox((inbox, err) => {
-    if(err) {
-        return console.error(err);
-    }
-    
-    console.log(`Created new inbox: ${inbox.address}, token: ${inbox.token}`);
-}, false, "example.com");
-```
+Note that all inboxes expire after 10 minutes since last check, with a hard expiry limit of one hour that cannot be bypassed.
 
-Will create an inbox with the address `example.com`.
+TempMail Plus subscribers can extend this to TEN hours, but the 10-minute check rule still applies.
 
 ### Retrieve emails
 
-To get the emails (you can also pass in the Inbox object instead of a token string):
+To get the emails in an inbox:
 ```js
-//with callback
-checkInbox("token", (emails) => {
-    emails.forEach((e) => {
-        console.log(JSON.stringify(e, null, 4));
-    });
-});
 
-//async
-checkInboxAsync("token").then((emails) => {
-    emails.forEach((e) => {
-        console.log(JSON.stringify(e, null, 4));
-    });
+//you can also pass through the Inbox object instead of the token string
+const emails = tempmail.checkInbox("<TOKEN>").then((emails) => {
+    if(!emails) {
+        console.log(`Inbox expired since "emails" is undefined...`);
+        return;
+    }
+    
+    console.log(`We got some emails!`);
+    
+    for(let i = 0; i < emails.length; i++) {
+        console.log(`email ${i}: ${JSON.stringify(emails[i])}`);
+    }
 });
-
-//await
-const emails = await checkInboxAsync("token");
 ```
 
 ### Custom Domains
 
-Starting September 1st, you can use custom domains with this API. To use a custom domain, you can use the following function:
+#### Note: you will need to be a TempMail Plus subscriber to use custom domains!
+
 ```js
-//with callback
-checkCustomInbox("example.com", "abcdefg...", (emails) => {
-    emails.forEach((e) => {
-        console.log(JSON.stringify(e, null, 4));
-    });
+tempmail.checkCustomDomain("example.com", "token").then(emails => {
+    //woohoo, emails!
 });
-
-//async
-checkCustomInboxAsync("example.com", "abcdefg...").then((emails) => {
-    emails.forEach((e) => {
-        console.log(JSON.stringify(e, null, 4));
-    });
-});
-
-//await
-const emails = await checkCustomAsync("example.com", "abcdefg...");
 ```
+
+You can obtain a token by visiting https://tempmail.lol/custom.html
 
 Custom domains will NOT alert you if the token is invalid.

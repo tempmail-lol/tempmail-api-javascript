@@ -7,154 +7,110 @@ import Email from "./Email";
 
 const BASE_URL = "https://api.tempmail.lol";
 
-/**
- * Create a new Inbox.
- * @param cb {function} Callback function.
- * @param rush {boolean} (optional) Enable Rush Mode (see https://tempmail.lol/news/2022/08/03/introducing-rush-mode-for-tempmail/).
- * @param domain {string} (optional) use a specific domain from the website.
- * 
- * @throws {Error} if the custom domain does not exist or `rush` and `domain` are present.
- */
-function createInbox(cb: (inbox: Inbox | undefined, err: Error | null) => any, rush = false, domain: string | undefined = undefined): void {
+export class TempMail {
     
-    if(rush && domain !== undefined) {
-        throw new Error("You cannot specify both a custom domain and rush mode.");
-    }
+    constructor(
+        private bananacrumbs_id?: string,
+        private bananacrumbs_mfa?: string,
+    ) {}
     
-    let url = `${BASE_URL}/generate`;
-    
-    if(rush) {
-        url += "/rush";
-    } else if(domain !== undefined) {
-        url += `/${domain}`;
-    }
-    
-    fetch(url).then(res => res.json()).then((json) => {
-        const inbox = new Inbox(json.address, json.token);
-        if(json.error) {
-            cb(undefined, new Error(json.error));
+    private async makeRequest(url: string): Promise<any> {
+        
+        let headers = {
+            "User-Agent": "TempMailJS/3.0.0"
+        };
+        
+        //if the user is a TempMail Plus subscriber, add the credentials here
+        if(this.bananacrumbs_id) {
+            headers["X-BananaCrumbs-ID"] = this.bananacrumbs_id;
+            headers["X-BananaCrumbs-MFA"] = this.bananacrumbs_mfa;
         }
-        cb(inbox, null);
-    }).catch((err) => {
-        cb(undefined, err);
-    });
-}
-
-/**
- * Create a new Inbox asynchronously.
- * 
- * @param rush {boolean} (optional) Enable Rush Mode (see https://tempmail.lol/news/2022/08/03/introducing-rush-mode-for-tempmail/).
- * @param domain {string} (optional) use a specific domain from the website.
- * @returns {Promise<Inbox>} Promise with the Inbox.
- * @throws {Error} if the custom domain does not exist or `rush` and `domain` are present.
- */
-async function createInboxAsync(rush: boolean = false, domain: string | undefined = undefined): Promise<Inbox> {
-    if(rush && domain !== undefined) {
-        throw new Error("You cannot specify both a custom domain and rush mode.");
-    }
-    
-    let url = `${BASE_URL}/generate`;
-    
-    if(rush) {
-        url += "/rush";
-    } else if(domain !== undefined) {
-        url += `/${domain}`;
-    }
-    
-    const res = await fetch(url);
-    const json = await res.json();
-    
-    if(json.error) throw new Error(json.error);
-    
-    return new Inbox(json.address, json.token);
-}
-
-/**
- * Check for new emails on an Inbox.
- * @param inbox {Inbox | string} Inbox or token string to check.
- * @param cb {function} Callback function.
- */
-function checkInbox(inbox: Inbox | string, cb: (emails: Email[], err: Error | null) => any): void {
-    
-    //convert the token to an Inbox
-    if(typeof inbox === "string") {
-        inbox = new Inbox("", inbox);
-    }
-    
-    fetch(`${BASE_URL}/auth/${inbox.token}`).then(res => res.json()).then(json => {
-        if(json.token === "invalid") {
-            cb([], new Error("Invalid token"));
+        
+        const raw = await fetch(BASE_URL + url, {
+            headers,
+        });
+        
+        //check for errors
+        if(raw.status === 402) { //no time left
+            throw new Error("BananaCrumbs ID has no more time left.");
+        } else if(raw.status === 400 && this.bananacrumbs_id) { //invalid credentials
+            throw new Error("Invalid BananaCrumbs credentials provided.");
+        } else if(!raw.ok) { //other error
+            throw new Error(`An error occurred while attempting to fetch data from the API: ${await raw.text()}`);
         }
-        if(json.email === null) {
-            return cb([], null);
+        
+        return await raw.json();
+    }
+    
+    /**
+     * Create a new inbox.
+     * 
+     * @param community {boolean} true to use community (formerly "rush mode") domains
+     * @param domain {string} the specific domain to use.
+     * @returns {Inbox} the Inbox object with the address and token.
+     */
+    async createInbox(community?: boolean, domain?: string): Promise<Inbox> {
+        let url: string;
+        
+        //craft the URL to use
+        if(domain) {
+            url = "/generate/" + domain;
+        } else {
+            url = "/generate" + (community ? "/rush" : "");
         }
-        const emails = json.email.map((email: Email) => new Email(email.from, email.to, email.subject, email.body, email.html, email.date, email.ip));
-        cb(emails, null);
-    });
-}
-
-/**
- * Check for new emails on an Inbox asynchronously.
- * 
- * @param inbox {Inbox | string} Inbox or token string to check.
- * @returns {Promise<Email[]>} Promise with the emails.
- * @throws {Error} If the token is invalid.
- */
-async function checkInboxAsync(inbox: Inbox | string): Promise<Email[]> {
-    
-    //convert the token to an Inbox
-    if(typeof inbox === "string") {
-        inbox = new Inbox("", inbox);
+        
+        const r = await this.makeRequest(url);
+        
+        return {
+            address: r.address,
+            token: r.token,
+        };
     }
     
-    const res = await fetch(`${BASE_URL}/auth/${inbox.token}`);
-    const json = await res.json();
-    if(json.token === "invalid") {
-        throw new Error("Invalid token");
+    /**
+     * Check an inbox for emails.
+     * 
+     * @param authentication
+     * @returns {Email[] | undefined} the Email array, or undefined if the inbox has expired.
+     */
+    async checkInbox(authentication: string | Inbox): Promise<Email[] | undefined> {
+        const token = authentication instanceof Inbox ? authentication.token : authentication;
+        
+        const r = await this.makeRequest(`/auth/${token}`);
+        
+        if(r.token && r.token === "invalid") {
+            return undefined;
+        }
+        
+        return r.email;
     }
-    if(json.email === null) {
-        return [];
+    
+    /**
+     * Check a custom domain.
+     * 
+     * Note that this requires a TempMail Plus subscription, as well as being logged in through `this` object.
+     * 
+     * @param domain {string} the domain to check.
+     * @param token {string} the pre-SHA512 token to use for authentication.
+     * @returns {Email[]} the emails, or undefined if there was an issue checking.
+     */
+    async checkCustomDomain(domain: string, token: string): Promise<Email[]> {
+        
+        const r = await this.makeRequest(`/custom/${token}/${domain}`);
+        
+        let emails: Email[];
+        
+        if(r.email === null) {
+            emails = [];
+        } else {
+            emails = r.email;
+        }
+        
+        return emails;
     }
-    return json.email.map((email: Email) => new Email(email.from, email.to, email.subject, email.body, email.html, email.date, email.ip));
-}
-
-/**
- * Check a custom inbox.
- * 
- * NOTE: this method will not return anything indicating if the token is invalid.
- * 
- * @param domain {string} Domain to check.
- * @param key {string} The key for the domain generated by the website.
- * @param cb {function} Callback function.
- */
-function checkCustomInbox(domain: string, key: string, cb: (emails: Email[]) => any): void {
-    fetch(`${BASE_URL}/custom/${key}/${domain}`).then(res => res.json()).then(json => {
-        const emails = json.email.map((email: Email) => new Email(email.from, email.to, email.subject, email.body, email.html, email.date, email.ip));
-        cb(emails);
-    });
-}
-
-/**
- * Check a custom inbox asynchronously.
- * 
- * NOTE: this method will not return anything indicating if the token is invalid.
- * 
- * @param domain {string} Domain to check.
- * @param key {string} The key for the domain generated by the website.
- * 
- * @returns {Promise<Email[]>} Promise with the emails.
- */
-async function checkCustomInboxAsync(domain: string, key: string): Promise<Email[]> {
-    const res = await fetch(`${BASE_URL}/custom/${key}/${domain}`);
-    const json = await res.json();
-    return json.email.map((email: Email) => new Email(email.from, email.to, email.subject, email.body, email.html, email.date, email.ip));
+    
 }
 
 export {
-    Inbox,
-    Email,
-    
-    createInbox, createInboxAsync,
-    checkInbox, checkInboxAsync,
-    checkCustomInbox, checkCustomInboxAsync
+    Email, Inbox
 };
