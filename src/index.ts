@@ -33,10 +33,14 @@ export class TempMail {
         //check for errors
         if(raw.status === 402) { //no time left
             throw new Error("BananaCrumbs ID has no more time left.");
-        } else if(raw.status === 400 && this.bananacrumbs_id) { //invalid credentials
+        } else if(raw.status === 403 && this.bananacrumbs_id) { //invalid credentials
             throw new Error("Invalid BananaCrumbs credentials provided.");
+        } else if(raw.status === 414) {
+            throw new Error("The provided webhook URL was too long (max 128 characters).");
+        } else if(raw.status === 500) {
+            throw new Error("The server encountered an internal error: " + await raw.text());
         } else if(!raw.ok) { //other error
-            throw new Error(`An error occurred while attempting to fetch data from the API: ${await raw.text()}`);
+            throw new Error(`TempMail API error: [${raw.status}] - ${await raw.text()}`);
         }
         
         return await raw.json();
@@ -107,6 +111,21 @@ export class TempMail {
         }
         
         return emails;
+    }
+    
+    /**
+     * Set the webhook for this account
+     * @param webhook_url {string} the webhook URL to use.
+     */
+    async setWebhook(webhook_url: string): Promise<void> {
+        return this.makeRequest(`/webhook/add/` + webhook_url);
+    }
+    
+    /**
+     * Remove a webhook from the account.
+     */
+    async removeWebhook(): Promise<void> {
+        return this.makeRequest(`/webhook/remove`);
     }
     
 }
