@@ -94,7 +94,7 @@ export class TempMail {
      */
     async checkCustomDomainLegacy(domain: string, token: string): Promise<Email[]> {
         
-        const r = await this.makeRequest(`/custom/${token}/${domain}`);
+        const r = await fetch(`https://api.tempmail.lol/custom/${token}/${domain}`);
         
         let emails: Email[];
         

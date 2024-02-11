@@ -8,11 +8,13 @@
 
 This is an API for the temporary email service [TempMail.lol](https://tempmail.lol).
 
-## If you are using a BananaCrumbs ID/Token and have not migrated, install version 3.1.0!!!
+## If you are using a BananaCrumbs ID/Token and have not migrated, install version 3.1.0 instead of 4.x.x!
 
 ## Upgrading from 3.1.0
 
-The only difference between 3.1.0 and 4.0.0 is the fact that the constructor only accepts an API Key, and not a BananaCrumbs ID.
+The key difference between 3.1.0 and 4.0.0 is the fact that the constructor only accepts an API Key, and not a BananaCrumbs ID.
+
+The custom domain method has changed as well as the createInbox method's parameters.
 
 ## Upgrading from 2.0.3
 
@@ -36,8 +38,8 @@ First, create a TempMail object:
 ```js
 const tempmail = new TempMail();
 
-//if you have a TempMail Plus account, you can add it here:
-const tempmail = new TempMail("24-number id", "32-character token");
+//if you have a TempMail Plus/Ultra account, you can add it here:
+const tempmail = new TempMail("API Key");
 ```
 
 ### Types
@@ -79,18 +81,17 @@ const inbox: Inbox = await tempmail.createInbox();
 //there are some advanced options as well
 
 //whether or not to create a community address
-const community = true;
-tempmail.createInbox(community);
+tempmail.createInbox({
+    community: false,
+    domain: "cooldomain.com",
+    prefix: "optional",
+});
 
-
-//or to use a specific domain
-const domain = "cringemonster.com";
-tempmail.createInbox(false, domain);
 ```
 
-Note that all inboxes expire after 10 minutes since last check, with a hard expiry limit of one hour that cannot be bypassed.
+Note that all inboxes expire after 30 minutes since last check, with a hard expiry limit of one hour that cannot be bypassed.
 
-TempMail Plus subscribers can extend this to TEN hours, but the 10-minute check rule still applies.
+TempMail Plus subscribers can extend this to TEN hours, but the 30-minute check rule still applies.
 
 ### Retrieve emails
 
@@ -114,17 +115,31 @@ const emails = tempmail.checkInbox("<TOKEN>").then((emails) => {
 
 ### Custom Domains
 
-#### Note: you will need to be a TempMail Plus subscriber to use custom domains!
+#### Note: you will need to be a TempMail Plus/Ultra subscriber to use custom domains!
 
+#### Old Custom Domains (v1)
 ```js
-tempmail.checkCustomDomain("example.com", "token").then(emails => {
-    //woohoo, emails!
+tempmail.checkCustomDomainLegacy("example.com", "token").then(emails => {
+    emails.forEach(e => {
+        console.log("Email from: " + e.from + " to " + e.to);
+    });
 });
 ```
 
 You can obtain a token by visiting https://tempmail.lol/custom.html
 
 Custom domains will NOT alert you if the token is invalid.
+
+#### New Custom Domains (v2)
+```js
+tempmail.checkV2CustomDomain("example.com").then(emails => {
+    emails.forEach(e => {
+        console.log("Email from: " + e.from + " to " + e.to);
+    });
+});
+```
+
+To setup this, visit your account on https://accounts.tempmail.lol and migrate if you have not already.
 
 ### Webhooks
 
