@@ -4,36 +4,37 @@ import fetch from "node-fetch";
 
 import Inbox from "./Inbox";
 import Email from "./Email";
+import { CreateInboxOptions } from "./CreateInboxOptions";
 
-const BASE_URL = "https://api.tempmail.lol";
+const BASE_URL = "https://api.tempmail.lol/v2";
 
 export class TempMail {
     
     constructor(
-        private bananacrumbs_id?: string,
-        private bananacrumbs_mfa?: string,
+        private api_key?: string,
     ) {}
     
-    private async makeRequest(url: string): Promise<any> {
+    private async makeRequest(url: string, post_data?: any, method?: "POST" | "GET" | "DELETE"): Promise<any> {
         
         let headers = {
             "User-Agent": "TempMailJS/3.0.0"
         };
         
         //if the user is a TempMail Plus subscriber, add the credentials here
-        if(this.bananacrumbs_id) {
-            headers["X-BananaCrumbs-ID"] = this.bananacrumbs_id;
-            headers["X-BananaCrumbs-MFA"] = this.bananacrumbs_mfa;
+        if(this.api_key) {
+            headers["Authorization"] = "Bearer " + this.api_key;
         }
         
         const raw = await fetch(BASE_URL + url, {
             headers,
+            method: method ? method : (post_data ? "POST" : "GET"),
+            body: post_data ? JSON.stringify(post_data) : undefined,
         });
         
         //check for errors
         if(raw.status === 402) { //no time left
-            throw new Error("BananaCrumbs ID has no more time left.");
-        } else if(raw.status === 403 && this.bananacrumbs_id) { //invalid credentials
+            throw new Error("Account has no more time left.");
+        } else if(raw.status === 403 && this.api_key) { //invalid credentials
             throw new Error("Invalid BananaCrumbs credentials provided.");
         } else if(raw.status === 414) {
             throw new Error("The provided webhook URL was too long (max 128 characters).");
@@ -53,17 +54,10 @@ export class TempMail {
      * @param domain {string} the specific domain to use.
      * @returns {Inbox} the Inbox object with the address and token.
      */
-    async createInbox(community?: boolean, domain?: string): Promise<Inbox> {
-        let url: string;
+    async createInbox(options: CreateInboxOptions): Promise<Inbox> {
+        let url = "/inbox/create";
         
-        //craft the URL to use
-        if(domain) {
-            url = "/generate/" + domain;
-        } else {
-            url = "/generate" + (community ? "/rush" : "");
-        }
-        
-        const r = await this.makeRequest(url);
+        const r = await this.makeRequest(url, options);
         
         return {
             address: r.address,
@@ -80,13 +74,13 @@ export class TempMail {
     async checkInbox(authentication: string | Inbox): Promise<Email[] | undefined> {
         const token = authentication instanceof Inbox ? authentication.token : authentication;
         
-        const r = await this.makeRequest(`/auth/${token}`);
+        const r = await this.makeRequest(`/inbox?token=${token}`);
         
-        if(r.token && r.token === "invalid") {
+        if(r.expired) {
             return undefined;
         }
         
-        return r.email;
+        return r.emails;
     }
     
     /**
@@ -98,7 +92,7 @@ export class TempMail {
      * @param token {string} the pre-SHA512 token to use for authentication.
      * @returns {Email[]} the emails, or undefined if there was an issue checking.
      */
-    async checkCustomDomain(domain: string, token: string): Promise<Email[]> {
+    async checkCustomDomainLegacy(domain: string, token: string): Promise<Email[]> {
         
         const r = await this.makeRequest(`/custom/${token}/${domain}`);
         
@@ -114,20 +108,51 @@ export class TempMail {
     }
     
     /**
+     * Check a new custom domain.  Note that v2 custom domains are different in the way
+     * the domain records are made.  Please visit https://accounts.tempmail.lol and visit custom
+     * domains to see how to set the records.
+     * 
+     * @param domain {string} your domain.
+     */
+    async checkV2CustomDomain(domain: string): Promise<Email[] | undefined> {
+        return await this.makeRequest("/custom?domain=" + domain);
+    }
+    
+    /**
      * Set the webhook for this account
      * @param webhook_url {string} the webhook URL to use.
      */
     async setWebhook(webhook_url: string): Promise<void> {
-        return this.makeRequest(`/webhook/add/` + webhook_url);
+        return this.makeRequest(`/webhook/`, {
+            url: webhook_url,
+        });
     }
     
     /**
      * Remove a webhook from the account.
      */
     async removeWebhook(): Promise<void> {
-        return this.makeRequest(`/webhook/remove`);
+        return this.makeRequest(`/webhook`, undefined, "DELETE");
     }
     
+    /**
+     * Sets a private domain webhook.
+     * 
+     * Read before using: https://github.com/tempmail-lol/server/wiki/v2-API-Endpoints#set-custom-domain-webhook 
+     */
+    async setPrivateDomainWebhook(domain: string, webhook_url: string): Promise<void> {
+        return this.makeRequest("/private_webhook", {
+            domain: domain,
+            url: webhook_url,
+        });
+    }
+    
+    /**
+     * Deletes a private webhook.
+     */
+    async deletePrivateDomainWebhook(domain: string): Promise<void> {
+        return this.makeRequest("/private_webhook?domain=" + domain);
+    }
 }
 
 export {

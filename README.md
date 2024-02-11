@@ -8,6 +8,12 @@
 
 This is an API for the temporary email service [TempMail.lol](https://tempmail.lol).
 
+## If you are using a BananaCrumbs ID/Token and have not migrated, install version 3.1.0!!!
+
+## Upgrading from 3.1.0
+
+The only difference between 3.1.0 and 4.0.0 is the fact that the constructor only accepts an API Key, and not a BananaCrumbs ID.
+
 ## Upgrading from 2.0.3
 
 The version 3.0.0+ is vastly different from the old version of the API.  Please read the changes before using the new version of the API.
