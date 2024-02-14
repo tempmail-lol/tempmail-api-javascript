@@ -94,7 +94,11 @@ export class TempMail {
      */
     async checkCustomDomainLegacy(domain: string, token: string): Promise<Email[]> {
         
-        const raw = (await fetch(`https://api.tempmail.lol/custom/${token}/${domain}`));
+        const raw = (await fetch(`https://api.tempmail.lol/custom/${token}/${domain}`), {
+            headers: {
+                "Authorization": "Bearer " + this.api_key,
+            },
+        });
         const r = await raw.json();
         
         let emails: Email[];
