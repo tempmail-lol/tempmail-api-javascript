@@ -120,7 +120,7 @@ export class TempMail {
      * @param domain {string} your domain.
      */
     async checkV2CustomDomain(domain: string): Promise<Email[] | undefined> {
-        return await this.makeRequest("/custom?domain=" + domain).email;
+        return (await this.makeRequest("/custom?domain=" + domain)).email;
     }
     
     /**
