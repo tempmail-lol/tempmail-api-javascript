@@ -17,7 +17,7 @@ export class TempMail {
     private async makeRequest(url: string, post_data?: any, method?: "POST" | "GET" | "DELETE"): Promise<any> {
         
         let headers = {
-            "User-Agent": "TempMailJS/3.0.0"
+            "User-Agent": "TempMailJS/4.1.0"
         };
         
         //if the user is a TempMail Plus subscriber, add the credentials here
@@ -94,11 +94,11 @@ export class TempMail {
      */
     async checkCustomDomainLegacy(domain: string, token: string): Promise<Email[]> {
         
-        const raw = (await fetch(`https://api.tempmail.lol/custom/${token}/${domain}`), {
+        const raw = (await fetch(`https://api.tempmail.lol/custom/${token}/${domain}`, {
             headers: {
                 "Authorization": "Bearer " + this.api_key,
             },
-        });
+        }));
         const r = await raw.json();
         
         let emails: Email[];
