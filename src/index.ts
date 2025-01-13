@@ -54,7 +54,7 @@ export class TempMail {
      * @param domain {string} the specific domain to use.
      * @returns {Inbox} the Inbox object with the address and token.
      */
-    async createInbox(options: CreateInboxOptions): Promise<Inbox> {
+    async createInbox(options?: CreateInboxOptions): Promise<Inbox> {
         let url = "/inbox/create";
         
         const r = await this.makeRequest(url, options);
