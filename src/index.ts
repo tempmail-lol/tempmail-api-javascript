@@ -118,7 +118,7 @@ export class TempMail {
     
     /**
      * Check a new custom domain.  Note that v2 custom domains are different in the way
-     * the domain records are made.  Please visit https://accounts.tempmail.lol and visit custom
+     * the domain records are made.  Please visit https://tempmail.lol/account and visit custom
      * domains to see how to set the records.
      * 
      * @param domain {string} your domain.

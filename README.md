@@ -139,7 +139,7 @@ tempmail.checkV2CustomDomain("example.com").then(emails => {
 });
 ```
 
-To setup this, visit your account on https://accounts.tempmail.lol and migrate if you have not already.
+To setup this, visit your account on https://tempmail.lol/account and migrate if you have not already.
 
 ### Webhooks
 
