@@ -8,21 +8,6 @@
 
 This is an API for the temporary email service [TempMail.lol](https://tempmail.lol).
 
-## If you are using a BananaCrumbs ID/Token and have not migrated, install version 3.1.0 instead of 4.x.x!
-
-## Upgrading from 3.1.0
-
-The key difference between 3.1.0 and 4.0.0 is the fact that the constructor only accepts an API Key, and not a BananaCrumbs ID.
-
-The custom domain method has changed as well as the createInbox method's parameters.
-
-## Upgrading from 2.0.3
-
-The version 3.0.0+ is vastly different from the old version of the API.  Please read the changes before using the new version of the API.
-
-Version 2.0.3 still works, but does not have support for custom domains or TempMail Plus.  Note that v2 support may be dropped at any time, so please
-upgrade your applications as soon as possible.
-
 ## Installation
 ```bash
 npm i tempmail.lol
@@ -117,33 +102,21 @@ const emails = tempmail.checkInbox("<TOKEN>").then((emails) => {
 
 #### Note: you will need to be a TempMail Plus/Ultra subscriber to use custom domains!
 
-#### Old Custom Domains (v1)
+To setup Custom Domains, visit your account on https://tempmail.lol/account and follow the instructions on https://tempmail.lol/custom
+
+After setting up Custom Domains, they can be checked the same way you make normal domains (note: only your account can access the domain!)
+
 ```js
-tempmail.checkCustomDomainLegacy("example.com", "token").then(emails => {
-    emails.forEach(e => {
-        console.log("Email from: " + e.from + " to " + e.to);
-    });
+tempmail.createInbox({
+    community: false,
+    domain: "example.com", //replace with your custom domain
+    prefix: "optional", //this will be the ENTIRE beginning of the email.  "optional" results in "optional@example.com".
 });
 ```
-
-You can obtain a token by visiting https://tempmail.lol/custom.html
-
-Custom domains will NOT alert you if the token is invalid.
-
-#### New Custom Domains (v2)
-```js
-tempmail.checkV2CustomDomain("example.com").then(emails => {
-    emails.forEach(e => {
-        console.log("Email from: " + e.from + " to " + e.to);
-    });
-});
-```
-
-To setup this, visit your account on https://tempmail.lol/account and migrate if you have not already.
 
 ### Webhooks
 
-You can set up a webhook to be called when an email is received.
+You can set up a webhook to be called when an email is received.  You must have Custom Domains setup beforehand.
 
 ```js
 tempmail.setWebhook("https://example.com/webhook").then(() => {
