@@ -74,9 +74,7 @@ tempmail.createInbox({
 
 ```
 
-Note that all inboxes expire after 30 minutes since last check, with a hard expiry limit of one hour that cannot be bypassed.
-
-TempMail Plus subscribers can extend this to TEN hours, but the 30-minute check rule still applies.
+Note: inboxes expire after 1, 10, or 30 hours with TempMail Free, Plus, and Ultra (respectively).
 
 ### Retrieve emails
 
