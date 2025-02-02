@@ -17,7 +17,7 @@ export class TempMail {
     private async makeRequest(url: string, post_data?: any, method?: "POST" | "GET" | "DELETE"): Promise<any> {
         
         let headers = {
-            "User-Agent": "TempMailJS/4.3.0"
+            "User-Agent": "TempMailJS/4.4.0"
         };
         
         //if the user is a TempMail Plus subscriber, add the credentials here
@@ -61,7 +61,7 @@ export class TempMail {
     async createInbox(options?: CreateInboxOptions): Promise<Inbox> {
         let url = "/inbox/create";
         
-        const r = await this.makeRequest(url, options);
+        const r = await this.makeRequest(url, options, "POST");
         
         return {
             address: r.address,
